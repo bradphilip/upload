@@ -1,0 +1,216 @@
+/////////////////////////////////////////////////////////////////////// 
+//                                                                      
+//  BUTTON LAYOUT    : BUILDER PRO 
+//                                                                      
+//  CONSOLE          : PS4
+//                                                                      
+//  Bumpers/Triggers : SWAPPED
+//--------------------------------------------------------------------- 
+//       
+//----COLOR IDENTIFICATION              
+define Blue = 1;
+define Red = 2;
+define Green = 3;
+define Pink = 4;
+define SkyBlue = 5;
+define Yellow = 6;
+define White = 7;
+data(1,
+    2, 0, 0, 0, //1. Blue                                 
+    0, 2, 0, 0, //2. Red                                  
+    0, 0, 2, 0, //3. Green                                
+    0, 0, 0, 2, //4. Pink                                 
+    2, 0, 2, 0, //5. SkyBlue                              
+    0, 2, 2, 0, //6. Yellow                               
+    2, 2, 2, 2 //7. White 
+);//-------------------------
+
+define FIRE_BTN   = PS4_R1; 
+define ADS_BTN    = PS4_L1; 
+define CROUCH_BTN = PS4_R3; 
+define SPRINT_BTN = PS4_L3; 
+define JUMP_BTN   = PS4_CROSS; 
+define NEXT_PIECE = PS4_R2; 
+define LEFT_BUMP  = PS4_L2; 
+define SWAP_BTN   = PS4_TRIANGLE; 
+define BUILD_BTN  = PS4_CROSS; 
+define RELOAD_BTN = PS4_SQUARE; 
+//--------------------------------------------------------------------- 
+//   BUILD BUTTONS                                                      
+define WALL_BTN   = PS4_R2; 
+define STAIRS_BTN = PS4_L2; 
+define FLOOR_BTN  = PS4_R1; 
+define ROOF_BTN   = PS4_L1; 
+//______________________________________________________________________|
+//########## VARIABLES BELOW USED BY SCRIPT (DO NOT TOUCH) #############|
+//----------------------------------------------------------------------|
+int AimAbuse_onoff   = TRUE;               
+int AR_AimAssist_on  = TRUE;               
+int AimAssist_onoff  = TRUE;               
+int shake            = 18; 
+int AutoDrop_onoff   = FALSE;               
+int AntiRecoil_onoff = TRUE;             
+int ANTI_RECOIL      = 11;               
+int ANTI_RECOIL_H    =  0;               
+int anti_recoil;                         
+int anti_recoil_H;                       
+int aimabuse_hold; 
+int aimabuse_rest; 
+
+//----Functions
+int rumble_type = RUMBLE_A;  
+int Col_ind;
+//end
+ 
+ 
+//----UNMAPPING CONTROLS
+unmap 15;  //LEFT
+unmap 16; //RIGHT
+//end
+//--------------------------------------------------------------------------------------
+//  MAIN BLOCK BEGIN                                  
+main {  
+
+
+    /////////////////////////////////////////////////////////////////////////////////
+    //  Color Identification
+    if ((!AR_AimAssist_on && !AutoDrop_onoff)) colourled(White);     //EVERYTHING IS OFF!
+    if ((AR_AimAssist_on && AutoDrop_onoff)) colourled(Green);      //EVERYTHING IS ON!
+    if ((AR_AimAssist_on && !AutoDrop_onoff)) colourled(Red);      // AR Aim Assist IS ON!
+    if ((!AR_AimAssist_on && AutoDrop_onoff)) colourled(Green);   // Auto Drop IS ON!
+          
+    ///////////////////////////////////////////////////////////////////////////////// 
+    // HAIR TRIGGER                                                                  
+    if(get_val(ADS_BTN))  set_val(ADS_BTN, 100);                                     
+    if(get_val(FIRE_BTN)) set_val(FIRE_BTN,100);                                   
+                                                      
+    //////////////////////////////////////////////////////////////////////
+    // DEAD ZONE CORECTION : LEFT STICK                                 
+    if(abs(get_val(PS4_LY)) < 0 && abs(get_val(PS4_LX)) < 0 ){        
+    	set_val(PS4_LY,0);                                                
+    	set_val(PS4_LX,0);                                                
+    }                                                                   
+                                                      
+    //////////////////////////////////////////////////////////////////////
+    // DEAD ZONE CORECTION : RIGHT STICK                                 
+    if(abs(get_val(PS4_RY)) < 0 && abs(get_val(PS4_RX)) < 0 ){         
+    	set_val(PS4_RY,0);                                                 
+    	set_val(PS4_RX,0);                                                
+    }                                                            
+              
+    ///////////////////////////////////////////////////////////////////////////////// 
+    //Aim Assist V 2                                     
+    if (AimAssist_onoff) {                            
+        if (get_val(ADS_BTN))                       
+            combo_run(Auto_Aimm);                     
+        else        
+            combo_stop(Auto_Aimm);                    
+                                                     
+                                                      
+        if (get_val(ADS_BTN)) {                        
+            if (abs(get_val(9)) > 21 || abs(get_val(10)) > 21){ 
+	            combo_stop(Auto_Aimm);                  
+            }                                         
+        }                                             
+    }//------------------------------------------------------------------------------- 
+            
+    if(AimAbuse_onoff){   
+       /////////////////////////////////////////////////////////////////////////////////
+       // ASSAULT RIFLES AIM ABUSE                                            
+       if (AR_AimAssist_on) {                             
+           if (get_val(ADS_BTN) && get_val(FIRE_BTN)) {  
+               aimabuse_hold = 55;
+               aimabuse_rest = 35;
+               combo_run(AR_RAPID_FIRE);             
+               combo_run(AIM_ABUSE);                  
+           } else if (combo_running(AIM_ABUSE)) {     
+               combo_stop(AIM_ABUSE);                 
+           }                                             
+       }//-----------------------------------------------
+                                                      
+     }   
+    ///////////////////////////////////////////////////////////////////////////////// 
+    //Drop Shot                                           
+    ///////////////////////////////////////////////////////////////////////////////// 
+    //Drop Shot 
+    if(get_val(7)){  
+        if(event_press(5)) { 
+              AutoDrop_onoff = !AutoDrop_onoff;    
+              rumble_A_if_true(AutoDrop_onoff);
+        }
+        set_val(5, 0); 
+    }
+                                                 
+    if (AutoDrop_onoff) {                                
+        if (get_val(7) && get_val(4) ) {  
+            combo_run(DROP_SHOT);                    
+        }                                            
+    }                                                                   
+    /////////////////////////////////////////////////////////////////////////////////
+    // ANTI RECOIL                                    
+    if(AntiRecoil_onoff){                             
+	    if (get_val(ADS_BTN)&& get_val(FIRE_BTN)) {     
+	        combo_run(AntiRecoil);                      
+	    }                                               
+    }                                                 
+                        
+}//  MAIN BLOCK END    
+//--------------------------------------------------------------------------------------
+                        
+//--------------------------------------------------------------------------------------
+// COMBO BLOCK                                                                   
+                                                                                
+combo AIM_ABUSE { //
+    set_val(ADS_BTN, 100);    
+    wait(aimabuse_hold);                
+    set_val(ADS_BTN, 0);      
+    wait(aimabuse_rest);                 
+} //end                       
+combo AR_RAPID_FIRE {        
+    set_val(FIRE_BTN, 100);  
+    wait(1);                 
+    set_val(FIRE_BTN, 0);    
+}                            
+combo DROP_SHOT {            
+    wait(40);                
+    set_val(5, 100);    
+    wait(40);                
+    wait(10); // how long to wait until next drop
+}                             
+combo Auto_Aimm {          
+    set_val(10, shake * -1); //1  
+    wait(20)               
+    set_val(9,  shake); //1  
+    wait(20)              
+    set_val(10, shake); //1  
+    wait(20)               
+    set_val(9,  shake * -1); //1  
+    wait(20)               
+}            
+combo VIBRATE {     
+    set_rumble(rumble_type, 100);      
+    wait(300);                         
+    reset_rumble(); 
+} //end  
+combo AntiRecoil { // This combo must be the last one 
+        anti_recoil = get_val(10) + ANTI_RECOIL;      
+        if (anti_recoil > 100) anti_recoil = 100;     
+        set_val(10, anti_recoil);                      
+        anti_recoil_H = get_val(9) + ANTI_RECOIL_H; 
+        if(anti_recoil_H > 100) anti_recoil_H = 100; 
+        set_val(9, anti_recoil_H);                      
+}                                              
+//----Functions 
+function rumble_A_if_true(var) {       
+    if (var) rumble_type = RUMBLE_A;   
+    else rumble_type = RUMBLE_B;       
+    combo_run(VIBRATE);             
+} //end        
+
+function colourled(Colour) {
+    Col_ind = (Colour * 4) - 3;
+    set_led(LED_1, dbyte(Col_ind));
+    set_led(LED_2, dbyte(Col_ind + 1));
+    set_led(LED_3, dbyte(Col_ind + 2));
+    set_led(LED_4, dbyte(Col_ind + 3));                   
+} //end
